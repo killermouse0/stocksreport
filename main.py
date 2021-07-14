@@ -1,19 +1,26 @@
 import os
 import json
-from finnhub import Finnhub
-from marketstack import Marketstack
+from provider.finnhub import Finnhub
+from provider.marketstack import Marketstack
+from portfolio.csv_portfolio import CsvPortfolio
+from market_data_loader import MarketDataLoader
+
+PTF = "ptf.csv"
 
 if __name__ == "__main__":
+
+    ptf = CsvPortfolio(PTF)
+    mdl = MarketDataLoader(ptf)
+
     fh_token = os.environ.get("FINNHUB_TOKEN")
     if fh_token:
         fh = Finnhub(token=fh_token)
-        res = fh.get_quote("BNP.PA")
-        print(json.dumps(res))
+        mdl.register_provider(fh)
 
     ms_token = os.environ.get("MARKETSTACK_TOKEN")
     if ms_token:
         ms = Marketstack(token=ms_token)
-        # res = ms.get_quote("BNP.XPAR")
-        # print(json.dumps(res))
-        res = ms.get_quotes(["BNP.XPAR", "TSLA"])
-        print(json.dumps(res))
+        mdl.register_provider(ms)
+
+    quotes = mdl.get_quotes()
+    print(json.dumps(quotes))

@@ -1,0 +1,5 @@
+symbol,provider
+TSLA,marketstack
+BNP.XPAR,marketstack
+BTCEUR,kraken
+MSFT,finnhub

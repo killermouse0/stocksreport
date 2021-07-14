@@ -1,4 +1,5 @@
 from provider import Provider
+from portfolio import Portfolio
 import requests
 
 
@@ -20,10 +21,16 @@ class Marketstack(Provider):
         res = self.query(url, params)
         return {"symbol": symbol, "quote": res["data"][0]}
 
-    def get_quotes(self, symbols: list):
+    def get_quotes(self, ptf: Portfolio):
         url = f"{Marketstack.BASE_URI}/eod/latest"
+        ms_items = ptf.get_symbols_for_provider("marketstack")
+        symbols = [x["symbol"] for x in ms_items]
         params = {"symbols": ",".join(symbols)}
         res = self.query(url, params)
         data = res["data"]
         l = [{"symbol": q["symbol"], "quote": q} for q in data]
         return l
+
+    @property
+    def provider_name(self):
+        return "marketstack"
