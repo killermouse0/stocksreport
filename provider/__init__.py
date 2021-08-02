@@ -1,17 +1,20 @@
-from portfolio import Portfolio
-from typing import overload
+from __future__ import annotations
+
+from typing import Dict, Sequence
+
+import portfolio
+from market_data_loader import MarketData
 
 
 class Provider:
-    @overload
-    def get_quote(self, symbol: str):
+    def get_quote(self, symbol: str) -> Dict[str, MarketData]:
         pass
 
-    @overload
-    def get_quotes(self, portfolio: Portfolio):
+    def get_quotes(
+        self, portfolio: portfolio.Portfolio
+    ) -> Sequence[Dict[str, MarketData]]:
         pass
 
     @property
-    @overload
-    def provider_name(self):
+    def provider_name(self) -> str:
         pass
