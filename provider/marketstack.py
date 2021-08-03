@@ -78,10 +78,6 @@ class Marketstack(provider.Provider):
     BASE_URI = "http://api.marketstack.com/v1"
     PROVIDER_NAME = "marketstack"
 
-    def __init__(self, token: str):
-        self._token = token
-        pass
-
     def query(self, url, params):
         params["access_key"] = self._token
         res = requests.get(url, params=params)

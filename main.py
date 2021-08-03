@@ -21,26 +21,20 @@ def format_market_data(md: MarketData) -> str:
 
 if __name__ == "__main__":
 
+    # Loading the portfolio
     ptf = CsvPortfolio(PTF)
-    mdl = MarketDataLoader(ptf)
 
-    fh_token = os.environ.get("FINNHUB_TOKEN")
-    if fh_token:
-        fh = Finnhub(token=fh_token)
-        mdl.register_provider(fh)
-
-    ms_token = os.environ.get("MARKETSTACK_TOKEN")
-    if ms_token:
-        ms = Marketstack(token=ms_token)
-        mdl.register_provider(ms)
-
+    # Initializing the providers
+    fh = Finnhub()
+    ms = Marketstack()
     kr = Kraken()
-    mdl.register_provider(kr)
+
+    # Initializing the Market Data Loader
+    mdl = MarketDataLoader(ptf)
+    mdl.register_providers([ms, fh, kr])
 
     quotes = mdl.get_quotes()
-    for md in quotes["marketstack"]:
-        print(format_market_data(md["data"]))
-    for md in quotes["finnhub"]:
-        print(format_market_data(md["data"]))
-    for md in quotes["kraken"]:
-        print(format_market_data(md["data"]))
+
+    for source in quotes.keys():
+        for md in quotes[source]:
+            print(format_market_data(md["data"]))

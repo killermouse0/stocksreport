@@ -60,9 +60,6 @@ class Finnhub(provider.Provider):
     BASE_URI = "https://finnhub.io/api/v1"
     PROVIDER_NAME = "finnhub"
 
-    def __init__(self, token: str = None):
-        self._token = token
-
     def query(self, url, params):
         headers = {"X-Finnhub-Token": self._token}
         res = requests.get(url, headers=headers, params=params)
