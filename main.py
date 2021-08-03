@@ -4,6 +4,7 @@ import sys
 from market_data_loader import MarketData, MarketDataLoader
 from portfolio.csv_portfolio import CsvPortfolio
 from provider.finnhub import Finnhub
+from provider.kraken import Kraken
 from provider.marketstack import Marketstack
 
 PTF = "ptf.csv"
@@ -33,10 +34,13 @@ if __name__ == "__main__":
         ms = Marketstack(token=ms_token)
         mdl.register_provider(ms)
 
+    kr = Kraken()
+    mdl.register_provider(kr)
+
     quotes = mdl.get_quotes()
     for md in quotes["marketstack"]:
         print(format_market_data(md["data"]))
     for md in quotes["finnhub"]:
         print(format_market_data(md["data"]))
-
-    print(format_market_data(ms.get_quote("TSLA")))
+    for md in quotes["kraken"]:
+        print(format_market_data(md["data"]))

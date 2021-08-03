@@ -1,4 +1,3 @@
-import json
 import time
 from datetime import date, datetime, timedelta
 from typing import Union
@@ -67,8 +66,6 @@ class Finnhub(provider.Provider):
     def query(self, url, params):
         headers = {"X-Finnhub-Token": self._token}
         res = requests.get(url, headers=headers, params=params)
-        print(f"URL = {url} ==> {res.url}")
-        print(f"{json.dumps(params)}")
         return res.json()
 
     @staticmethod
@@ -111,8 +108,7 @@ class Finnhub(provider.Provider):
         return fh_res
 
     def get_quotes(self, ptf: portfolio.Portfolio):
-        fh_items = ptf.get_symbols_for_provider("finnhub")
-        print(json.dumps(fh_items))
+        fh_items = ptf.get_symbols_for_provider(self.provider_name)
         symbols = [x["symbol"] for x in fh_items]
         res = [{"symbol": s, "data": self.get_quote(s)} for s in symbols]
         return res
