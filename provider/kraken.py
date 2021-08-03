@@ -1,5 +1,4 @@
 import datetime
-import json
 import time
 from typing import Dict, Sequence
 
@@ -71,8 +70,6 @@ class Kraken(provider.Provider):
 
     def query(self, url, params):
         res = requests.get(url, params=params)
-        print(f"URL = {url} ==> {res.url}")
-        print(f"{json.dumps(params)}")
         return res.json()
 
     @staticmethod
@@ -88,7 +85,6 @@ class Kraken(provider.Provider):
         params = {"pair": symbol, "interval": 1440, "since": ts}
         res = self.query(url, params=params)
         res = res["result"]
-        print(res.keys())
         last_ts = res["last"]
         for values in res[symbol]:
             if values[0] == last_ts:
