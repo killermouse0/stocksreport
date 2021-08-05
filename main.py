@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import Dict, Sequence
 
 from market_data_loader import MarketData, MarketDataLoader
 from portfolio.csv_portfolio import CsvPortfolio
@@ -13,10 +14,18 @@ sys.path.append(os.path.join(os.path.dirname(__file__)))
 
 
 def format_market_data(md: MarketData) -> str:
-    res = "{}:{}:{}:{}:{}:{}:{}".format(
-        md.provider, md.symbol, md.date, md.open, md.high, md.low, md.close
+    res = "{}:{}:{}:{}:{}:{}".format(
+        md.symbol, md.date, md.open, md.high, md.low, md.close
     )
     return res
+
+
+def print_quotes(quotes: Dict[str, Sequence[Dict[str, MarketData]]]):
+    for provider_name, provider_quotes in quotes.items():
+        print(provider_name.upper(), "\n", "=" * len(provider_name), sep="")
+        for q in provider_quotes:
+            print(format_market_data(q["data"]))
+        print()
 
 
 if __name__ == "__main__":
@@ -35,6 +44,4 @@ if __name__ == "__main__":
 
     quotes = mdl.get_quotes()
 
-    for source in quotes.keys():
-        for md in quotes[source]:
-            print(format_market_data(md["data"]))
+    print_quotes(quotes)
