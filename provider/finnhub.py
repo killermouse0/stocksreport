@@ -1,12 +1,28 @@
+import abc
 import time
 from datetime import date, datetime, timedelta
-from typing import Union
+from typing import Any, Dict, Union
 
 import requests
 
 import market_data_loader
 import portfolio
 import provider
+
+
+class FinnhubRequest(abc.ABC):
+    @abc.abstractmethod
+    def query(self, url: str, params: Dict[str, Any]) -> Dict[str, Any]:
+        pass
+
+
+class FinnhubHttpRequest(FinnhubRequest):
+    def __init__(self, headers=None) -> None:
+        self._headers = headers
+
+    def query(self, url: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
+        res = requests.get(url, params=params, headers=self._headers)
+        return res.json()
 
 
 class FinnhubData(market_data_loader.MarketData):
@@ -60,10 +76,13 @@ class Finnhub(provider.Provider):
     BASE_URI = "https://finnhub.io/api/v1"
     PROVIDER_NAME = "finnhub"
 
-    def query(self, url, params):
-        headers = {"X-Finnhub-Token": self._token}
-        res = requests.get(url, headers=headers, params=params)
-        return res.json()
+    def __init__(self, token: str = None, requester: FinnhubRequest = None):
+        super().__init__(token=token)
+        if requester:
+            self._requester = requester
+        else:
+            headers = {"X-Finnhub-Token": self._token}
+            self._requester = FinnhubHttpRequest(headers=headers)
 
     @staticmethod
     def midnight(ts: Union[int, None] = None) -> datetime:
@@ -98,7 +117,7 @@ class Finnhub(provider.Provider):
             "from": int(from_date.timestamp()),
             "to": int(to_date.timestamp()),
         }
-        res = self.query(url, params)
+        res = self._requester.query(url, params)
         res["symbol"] = symbol
         last_quote = Finnhub.get_latest_quote(res)
         fh_res = FinnhubData(*last_quote)

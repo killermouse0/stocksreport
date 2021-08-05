@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import abc
 import datetime
-from typing import Dict, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 import requests
 from dateutil import parser
@@ -9,6 +10,18 @@ from dateutil import parser
 import market_data_loader
 import portfolio
 import provider
+
+
+class MarketstackRequest(abc.ABC):
+    @abc.abstractmethod
+    def query(self, url: str, params: Dict[str, str]) -> Dict[str, Any]:
+        pass
+
+
+class KrakenHttpRequest(MarketstackRequest):
+    def query(self, url: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
+        res = requests.get(url, params=params)
+        return res.json()
 
 
 class MarketstackData(market_data_loader.MarketData):
@@ -77,6 +90,9 @@ class MarketstackData(market_data_loader.MarketData):
 class Marketstack(provider.Provider):
     BASE_URI = "http://api.marketstack.com/v1"
     PROVIDER_NAME = "marketstack"
+
+    def __init__(self, token: Optional[str] = None):
+        super().__init__(token=token)
 
     def query(self, url, params):
         params["access_key"] = self._token
