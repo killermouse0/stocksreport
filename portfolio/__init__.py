@@ -1,9 +1,7 @@
-class Portfolio:
-    def load(self):
-        pass
+import abc
 
-    def get_symbols(self):
-        pass
 
+class Portfolio(abc.ABC):
+    @abc.abstractmethod
     def get_symbols_for_provider(self, provider: str):
         pass
