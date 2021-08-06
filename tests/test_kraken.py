@@ -1,3 +1,4 @@
+import datetime
 import os
 import sys
 from typing import Any, Dict
@@ -71,18 +72,30 @@ class KrakenMockRequest(provider.kraken.KrakenRequest):
 
 def test_get_quote():
     k = provider.kraken.Kraken(requester=KrakenMockRequest())
-    expected = provider.kraken.KrakenData(
+    keys = [
+        "symbol",
+        "date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "vwap",
+        "volume",
+        "num_trades",
+        "provider",
+    ]
+    values = [
         "XXBTZUSD",
-        *[
-            1628121600,
-            "39749.0",
-            "41403.5",
-            "37355.0",
-            "40886.4",
-            "39368.8",
-            "4722.98596131",
-            38580,
-        ]
-    )
+        datetime.datetime.fromtimestamp(1628121600).date(),
+        "39749.0",
+        "41403.5",
+        "37355.0",
+        "40886.4",
+        "39368.8",
+        "4722.98596131",
+        38580,
+        provider.kraken.Kraken.provider_name,
+    ]
+    expected = provider.kraken.KrakenData(**dict(zip(keys, values)))
     res = k.get_quote("XXBTZUSD")
     assert expected == res

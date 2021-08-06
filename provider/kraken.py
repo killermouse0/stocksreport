@@ -1,6 +1,7 @@
 import abc
 import datetime
 import time
+from dataclasses import dataclass
 from typing import Any, Dict, Optional, Sequence
 
 import requests
@@ -10,69 +11,12 @@ import portfolio
 import provider
 
 
+@dataclass
 class KrakenData(market_data_loader.MarketData):
-    def __init__(
-        self,
-        symbol: str,
-        time: int,
-        open: float,
-        high: float,
-        low: float,
-        close: float,
-        vwap: float,
-        volume: float,
-        num_trades: int,
-    ) -> None:
-        self._symbol = symbol
-        self._date = datetime.datetime.fromtimestamp(time).date()
-        self._open = open
-        self._high = high
-        self._low = low
-        self._close = close
-        self._vwap = vwap
-        self._volume = volume
-        self._num_trades = num_trades
-
-    @property
-    def symbol(self) -> str:
-        return self._symbol
-
-    @property
-    def open(self) -> float:
-        return self._open
-
-    @property
-    def high(self) -> float:
-        return self._high
-
-    @property
-    def low(self) -> float:
-        return self._low
-
-    @property
-    def close(self) -> float:
-        return self._close
-
-    @property
-    def date(self) -> datetime.date:
-        return self._date
-
-    @property
-    def provider(self) -> str:
-        return Kraken.PROVIDER_NAME
-
-    def __eq__(self, o: object) -> bool:
-        if not isinstance(o, KrakenData):
-            return NotImplemented
-        return (
-            self.symbol == o.symbol
-            and self.open == o.open
-            and self.high == o.high
-            and self.low == o.low
-            and self.close == o.close
-            and self.date == o.date
-            and self.provider == o.provider
-        )
+    vwap: float
+    volume: float
+    num_trades: int
+    date: datetime.date
 
 
 class KrakenRequest(abc.ABC):
@@ -101,6 +45,13 @@ class Kraken(provider.Provider):
         ten_days_ago_ts = today_ts - 10 * 24 * 60 * 60
         return ten_days_ago_ts
 
+    def fix_data(self, d: Dict[str, Any]) -> Dict[str, Any]:
+        res = d.copy()
+        res["date"] = datetime.datetime.fromtimestamp(d["time"]).date()
+        res["provider"] = Kraken.provider_name
+        res.pop("time")
+        return res
+
     def get_quote(self, symbol: str) -> Optional[market_data_loader.MarketData]:
         url = Kraken.BASE_URI + "OHLC"
         ts = Kraken.ten_days_ago()
@@ -110,7 +61,21 @@ class Kraken(provider.Provider):
         last_ts = res["last"]
         for values in res[symbol]:
             if values[0] == last_ts:
-                return KrakenData(symbol, *values)
+                keys = [
+                    "symbol",
+                    "time",
+                    "open",
+                    "high",
+                    "low",
+                    "close",
+                    "vwap",
+                    "volume",
+                    "num_trades",
+                    "provider",
+                ]
+                values = [symbol, *values, self.provider_name]
+                d = dict(zip(keys, values))
+                return KrakenData(**self.fix_data(d))
         return None
 
     def get_quotes(

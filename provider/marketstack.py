@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import abc
-import datetime
+from dataclasses import dataclass
 from typing import Any, Dict, Optional, Sequence
 
 import requests
@@ -12,99 +12,68 @@ import portfolio
 import provider
 
 
+@dataclass
+class MarketstackData(market_data_loader.MarketData):
+    adj_open: float
+    adj_high: float
+    adj_low: float
+    adj_close: float
+    adj_volume: float
+    volume: float
+    split_factor: float
+    exchange: str
+
+    def __post_init__(self):
+        self.open = self.adj_open if self.adj_open else self.open
+        self.high = self.adj_high if self.adj_high else self.high
+        self.low = self.adj_low if self.adj_low else self.low
+        self.close = self.adj_close if self.adj_close else self.close
+        self.volume = self.adj_volume if self.adj_volume else self.volume
+
+
 class MarketstackRequest(abc.ABC):
     @abc.abstractmethod
     def query(self, url: str, params: Dict[str, str]) -> Dict[str, Any]:
         pass
 
 
-class KrakenHttpRequest(MarketstackRequest):
+class MarketstackHttpRequest(MarketstackRequest):
+    def __init__(self, token: str) -> None:
+        self._token = token
+
     def query(self, url: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
+        params["access_key"] = self._token
         res = requests.get(url, params=params)
         return res.json()
-
-
-class MarketstackData(market_data_loader.MarketData):
-    def __init__(
-        self,
-        date: str,
-        symbol: str,
-        adj_open: float,
-        adj_high: float,
-        adj_low: float,
-        adj_close: float,
-        adj_volume: float,
-        open: float,
-        high: float,
-        low: float,
-        close: float,
-        volume: float,
-        **kwargs,
-    ):
-        self._symbol = symbol
-        self._date = parser.parse(date).date()
-        self._adj_open = adj_open
-        self._adj_high = adj_high
-        self._adj_low = adj_low
-        self._adj_close = adj_close
-        self._adj_volume = adj_volume
-        self._open = open
-        self._high = high
-        self._low = low
-        self._close = close
-        self._volume = volume
-
-    @property
-    def date(self) -> datetime.date:
-        return self._date
-
-    @property
-    def symbol(self) -> str:
-        return self._symbol
-
-    @property
-    def open(self) -> float:
-        return self._adj_open if self._adj_open else self._open
-
-    @property
-    def high(self) -> float:
-        return self._adj_high if self._adj_high else self._high
-
-    @property
-    def low(self) -> float:
-        return self._adj_low if self._adj_low else self._low
-
-    @property
-    def close(self) -> float:
-        return self._adj_close if self._adj_close else self._close
-
-    @property
-    def volume(self) -> float:
-        return self._adj_volume if self._adj_volume else self._volume
-
-    @property
-    def provider(self) -> str:
-        return Marketstack.PROVIDER_NAME
 
 
 class Marketstack(provider.Provider):
     BASE_URI = "http://api.marketstack.com/v1"
     PROVIDER_NAME = "marketstack"
 
-    def __init__(self, token: Optional[str] = None):
+    def __init__(
+        self,
+        token: Optional[str] = None,
+        requester: Optional[MarketstackRequest] = None,
+    ):
         super().__init__(token=token)
-
-    def query(self, url, params):
-        params["access_key"] = self._token
-        res = requests.get(url, params=params)
-        return res.json()
+        if requester is not None:
+            self.requester = requester
+        else:
+            self.requester = MarketstackHttpRequest(token=self._token)
 
     def get_quote(self, symbol: str):
         url = f"{Marketstack.BASE_URI}/eod/latest"
         params = {"symbols": symbol}
-        res = self.query(url, params)
+        res = self.requester.query(url, params)
         data = res["data"][0]
-        return MarketstackData(**data)
+        return MarketstackData(**self.fix_data(data))
+
+    def fix_data(self, d: Dict[str, Any]) -> Dict[str, Any]:
+        res = d.copy()
+        res["date"] = parser.parse(d["date"]).date()
+        res["provider"] = Marketstack.provider_name
+        return res
 
     def get_quotes(
         self, portfolio: portfolio.Portfolio
@@ -113,12 +82,16 @@ class Marketstack(provider.Provider):
         ms_items = portfolio.get_symbols_for_provider(self.provider_name)
         symbols = [x["symbol"] for x in ms_items]
         params = {"symbols": ",".join(symbols)}
-        res = self.query(url, params)
+        res = self.requester.query(url, params)
         data = res["data"]
-        l = [  # noqa: E741
-            {"symbol": q["symbol"], "data": MarketstackData(**q)} for q in data
+        l_res = [
+            {
+                "symbol": q["symbol"],
+                "data": MarketstackData(**self.fix_data(q)),
+            }
+            for q in data
         ]
-        return l
+        return l_res
 
     @property
     def provider_name(self) -> str:

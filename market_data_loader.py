@@ -2,44 +2,22 @@ from __future__ import annotations
 
 import abc
 import datetime
+from dataclasses import dataclass
 from typing import Dict, List, Sequence
 
 import provider
 from portfolio import Portfolio
 
 
+@dataclass
 class MarketData(abc.ABC):
-    """
-    symbol, open, high, low, close, date, provider
-    """
-
-    @abc.abstractproperty
-    def symbol(self) -> str:
-        pass
-
-    @abc.abstractproperty
-    def open(self) -> float:
-        pass
-
-    @abc.abstractproperty
-    def high(self) -> float:
-        pass
-
-    @abc.abstractproperty
-    def low(self) -> float:
-        pass
-
-    @abc.abstractproperty
-    def close(self) -> float:
-        pass
-
-    @abc.abstractproperty
-    def date(self) -> datetime.date:
-        pass
-
-    @abc.abstractproperty
-    def provider(self) -> str:
-        pass
+    symbol: str
+    open: float
+    high: float
+    low: float
+    close: float
+    date: datetime.date
+    provider: str
 
 
 class MarketDataLoader:

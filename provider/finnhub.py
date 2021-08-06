@@ -1,6 +1,7 @@
 import abc
 import time
-from datetime import date, datetime, timedelta
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Any, Dict, Union
 
 import requests
@@ -8,6 +9,11 @@ import requests
 import market_data_loader
 import portfolio
 import provider
+
+
+@dataclass
+class FinnhubData(market_data_loader.MarketData):
+    t: int
 
 
 class FinnhubRequest(abc.ABC):
@@ -23,53 +29,6 @@ class FinnhubHttpRequest(FinnhubRequest):
     def query(self, url: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
         res = requests.get(url, params=params, headers=self._headers)
         return res.json()
-
-
-class FinnhubData(market_data_loader.MarketData):
-    def __init__(
-        # noqa: E741
-        self,
-        symbol: str,
-        o: float,
-        c: float,
-        h: float,
-        l: float,  # noqa: E741
-        t: int,
-    ) -> None:
-        self._symbol = symbol
-        self._open = o
-        self._close = c
-        self._high = h
-        self._low = l
-        self._date = datetime.fromtimestamp(t).date()
-
-    @property
-    def symbol(self) -> str:
-        return self._symbol
-
-    @property
-    def open(self) -> float:
-        return self._open
-
-    @property
-    def high(self) -> float:
-        return self._high
-
-    @property
-    def low(self) -> float:
-        return self._low
-
-    @property
-    def close(self) -> float:
-        return self._close
-
-    @property
-    def date(self) -> date:
-        return self._date
-
-    @property
-    def provider(self) -> str:
-        return Finnhub.PROVIDER_NAME
 
 
 class Finnhub(provider.Provider):
@@ -94,17 +53,25 @@ class Finnhub(provider.Provider):
 
     @staticmethod
     def get_latest_quote(quotes: dict):
-        syms = (quotes["symbol"] for _ in quotes["t"])
-        q = zip(
+        keys = ["symbol", "t", "open", "high", "low", "close", "provider"]
+        syms = [quotes["symbol"]] * len(quotes["t"])
+        provs = [Finnhub.provider_name] * len(quotes["t"])
+        values = zip(
             syms,
+            quotes["t"],
             quotes["o"],
-            quotes["c"],
             quotes["h"],
             quotes["l"],
-            quotes["t"],
+            quotes["c"],
+            provs,
         )
-        list_q = list(q)
-        res = list(list_q[-1])
+        last_value = list(values)[-1]
+        res = dict(zip(keys, last_value))
+        return res
+
+    def fix_data(self, d: Dict[str, Any]) -> Dict[str, Any]:
+        res = d.copy()
+        res["date"] = datetime.fromtimestamp(d["t"]).date()
         return res
 
     def get_quote(self, symbol: str):
@@ -119,8 +86,8 @@ class Finnhub(provider.Provider):
         }
         res = self._requester.query(url, params)
         res["symbol"] = symbol
-        last_quote = Finnhub.get_latest_quote(res)
-        fh_res = FinnhubData(*last_quote)
+        latest_quote = Finnhub.get_latest_quote(res)
+        fh_res = FinnhubData(**self.fix_data(latest_quote))
         return fh_res
 
     def get_quotes(self, ptf: portfolio.Portfolio):
