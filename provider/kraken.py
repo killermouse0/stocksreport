@@ -61,6 +61,19 @@ class KrakenData(market_data_loader.MarketData):
     def provider(self) -> str:
         return Kraken.PROVIDER_NAME
 
+    def __eq__(self, o: object) -> bool:
+        if not isinstance(o, KrakenData):
+            return NotImplemented
+        return (
+            self.symbol == o.symbol
+            and self.open == o.open
+            and self.high == o.high
+            and self.low == o.low
+            and self.close == o.close
+            and self.date == o.date
+            and self.provider == o.provider
+        )
+
 
 class KrakenRequest(abc.ABC):
     @abc.abstractmethod

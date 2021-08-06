@@ -1,5 +1,3 @@
-import os
-import sys
 from typing import Dict, Sequence
 
 from market_data_loader import MarketData, MarketDataLoader
@@ -9,8 +7,6 @@ from provider.kraken import Kraken
 from provider.marketstack import Marketstack
 
 PTF = "ptf.csv"
-
-sys.path.append(os.path.join(os.path.dirname(__file__)))
 
 
 def format_market_data(md: MarketData) -> str:
@@ -28,10 +24,9 @@ def print_quotes(quotes: Dict[str, Sequence[Dict[str, MarketData]]]):
         print()
 
 
-if __name__ == "__main__":
-
+def main(ptf_filename: str) -> None:
     # Loading the portfolio
-    ptf = CsvPortfolio(PTF)
+    ptf = CsvPortfolio(ptf_filename)
 
     # Initializing the providers
     fh = Finnhub()
@@ -45,3 +40,7 @@ if __name__ == "__main__":
     quotes = mdl.get_quotes()
 
     print_quotes(quotes)
+
+
+if __name__ == "__main__":
+    main(PTF)
