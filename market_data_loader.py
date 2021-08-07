@@ -22,7 +22,7 @@ class MarketData(abc.ABC):
 
 class MarketDataLoader:
     def __init__(self, portfolio: Portfolio) -> None:
-        self._providers: dict[str, provider.Provider] = {}
+        self._providers: Dict[str, provider.Provider] = {}
         self._portfolio = portfolio
 
     def register_providers(self, providers: List[provider.Provider]):
@@ -30,8 +30,8 @@ class MarketDataLoader:
             provider_name = p.provider_name
             self._providers[provider_name] = p
 
-    def get_quotes(self) -> Dict[str, Sequence[Dict[str, MarketData]]]:
-        res = {}
+    def get_quotes(self) -> Sequence[MarketData]:
+        res: List[MarketData] = []
         for p_name, p_provider in self._providers.items():
-            res[p_name] = p_provider.get_quotes(self._portfolio)
+            res.extend(p_provider.get_quotes(self._portfolio.filter_provider(p_name)))
         return res

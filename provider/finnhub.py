@@ -2,7 +2,7 @@ import abc
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, Union
+from typing import Any, Dict, Sequence, Union
 
 import requests
 
@@ -23,11 +23,12 @@ class FinnhubRequest(abc.ABC):
 
 
 class FinnhubHttpRequest(FinnhubRequest):
-    def __init__(self, headers=None) -> None:
-        self._headers = headers
+    def __init__(self, token: str) -> None:
+        self._token = token
 
     def query(self, url: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
-        res = requests.get(url, params=params, headers=self._headers)
+        headers = {"X-Finnhub-Token": self._token}
+        res = requests.get(url, params=params, headers=headers)
         return res.json()
 
 
@@ -35,13 +36,8 @@ class Finnhub(provider.Provider):
     BASE_URI = "https://finnhub.io/api/v1"
     PROVIDER_NAME = "finnhub"
 
-    def __init__(self, token: str = None, requester: FinnhubRequest = None):
-        super().__init__(token=token)
-        if requester:
-            self._requester = requester
-        else:
-            headers = {"X-Finnhub-Token": self._token}
-            self._requester = FinnhubHttpRequest(headers=headers)
+    def __init__(self, requester: FinnhubRequest):
+        self._requester = requester
 
     @staticmethod
     def midnight(ts: Union[int, None] = None) -> datetime:
@@ -74,7 +70,7 @@ class Finnhub(provider.Provider):
         res["date"] = datetime.fromtimestamp(d["t"]).date()
         return res
 
-    def get_quote(self, symbol: str):
+    def get_quote(self, symbol: str) -> FinnhubData:
         to_date = Finnhub.midnight()
         from_date = to_date - timedelta(days=10)
         url = f"{Finnhub.BASE_URI}/stock/candle"
@@ -90,10 +86,9 @@ class Finnhub(provider.Provider):
         fh_res = FinnhubData(**self.fix_data(latest_quote))
         return fh_res
 
-    def get_quotes(self, ptf: portfolio.Portfolio):
-        fh_items = ptf.get_symbols_for_provider(self.provider_name)
-        symbols = [x["symbol"] for x in fh_items]
-        res = [{"symbol": s, "data": self.get_quote(s)} for s in symbols]
+    def get_quotes(self, ptf: portfolio.Portfolio) -> Sequence[FinnhubData]:
+        symbols = ptf.get_symbols()
+        res = [self.get_quote(s) for s in symbols]
         return res
 
     @property

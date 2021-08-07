@@ -1,12 +1,24 @@
-from typing import Dict, Sequence
+import os
+from typing import Sequence
 
 from market_data_loader import MarketData, MarketDataLoader
 from portfolio.csv_portfolio import CsvPortfolio
-from provider.finnhub import Finnhub
+from provider.finnhub import Finnhub, FinnhubHttpRequest
 from provider.kraken import Kraken
-from provider.marketstack import Marketstack
+from provider.marketstack import Marketstack, MarketstackHttpRequest
 
 PTF = "ptf.csv"
+
+
+class NoTokenError(Exception):
+    pass
+
+
+def get_token(token_env: str):
+    token = os.environ.get(token_env)
+    if token is None:
+        raise NoTokenError
+    return token
 
 
 def format_market_data(md: MarketData) -> str:
@@ -16,12 +28,9 @@ def format_market_data(md: MarketData) -> str:
     return res
 
 
-def print_quotes(quotes: Dict[str, Sequence[Dict[str, MarketData]]]):
-    for provider_name, provider_quotes in quotes.items():
-        print(provider_name.upper(), "\n", "=" * len(provider_name), sep="")
-        for q in provider_quotes:
-            print(format_market_data(q["data"]))
-        print()
+def print_quotes(quotes: Sequence[MarketData]):
+    for q in quotes:
+        print(format_market_data(q))
 
 
 def main(ptf_filename: str) -> None:
@@ -29,8 +38,10 @@ def main(ptf_filename: str) -> None:
     ptf = CsvPortfolio(ptf_filename)
 
     # Initializing the providers
-    fh = Finnhub()
-    ms = Marketstack()
+    fh = Finnhub(requester=FinnhubHttpRequest(token=get_token("FINNHUB_TOKEN")))
+    ms = Marketstack(
+        requester=MarketstackHttpRequest(token=get_token("MARKETSTACK_TOKEN"))
+    )
     kr = Kraken()
 
     # Initializing the Market Data Loader

@@ -2,7 +2,7 @@ import abc
 import datetime
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, Sequence
 
 import requests
 
@@ -52,7 +52,7 @@ class Kraken(provider.Provider):
         res.pop("time")
         return res
 
-    def get_quote(self, symbol: str) -> Optional[market_data_loader.MarketData]:
+    def get_quote(self, symbol: str) -> KrakenData:
         url = Kraken.BASE_URI + "OHLC"
         ts = Kraken.ten_days_ago()
         params = {"pair": symbol, "interval": 1440, "since": ts}
@@ -76,14 +76,11 @@ class Kraken(provider.Provider):
                 values = [symbol, *values, self.provider_name]
                 d = dict(zip(keys, values))
                 return KrakenData(**self.fix_data(d))
-        return None
+        raise provider.SymbolNotFoundError
 
-    def get_quotes(
-        self, ptf: portfolio.Portfolio
-    ) -> Sequence[Dict[str, market_data_loader.MarketData]]:
-        kr_items = ptf.get_symbols_for_provider(self.provider_name)
-        symbols = [x["symbol"] for x in kr_items]
-        res = [{"symbol": s, "data": self.get_quote(s)} for s in symbols]
+    def get_quotes(self, ptf: portfolio.Portfolio) -> Sequence[KrakenData]:
+        symbols = ptf.get_symbols()
+        res = [self.get_quote(s) for s in symbols]
         return res
 
     @property

@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 import abc
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, Sequence
 
 import requests
 from dateutil import parser
@@ -41,7 +39,7 @@ class MarketstackHttpRequest(MarketstackRequest):
     def __init__(self, token: str) -> None:
         self._token = token
 
-    def query(self, url: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
+    def query(self, url: str, params: Dict[str, Any]) -> Dict[str, Any]:
         params["access_key"] = self._token
         res = requests.get(url, params=params)
         return res.json()
@@ -53,14 +51,9 @@ class Marketstack(provider.Provider):
 
     def __init__(
         self,
-        token: Optional[str] = None,
-        requester: Optional[MarketstackRequest] = None,
+        requester: MarketstackRequest,
     ):
-        super().__init__(token=token)
-        if requester is not None:
-            self.requester = requester
-        else:
-            self.requester = MarketstackHttpRequest(token=self._token)
+        self.requester = requester
 
     def get_quote(self, symbol: str):
         url = f"{Marketstack.BASE_URI}/eod/latest"
@@ -75,22 +68,13 @@ class Marketstack(provider.Provider):
         res["provider"] = Marketstack.provider_name
         return res
 
-    def get_quotes(
-        self, portfolio: portfolio.Portfolio
-    ) -> Sequence[Dict[str, market_data_loader.MarketData]]:
+    def get_quotes(self, portfolio: portfolio.Portfolio) -> Sequence[MarketstackData]:
         url = f"{Marketstack.BASE_URI}/eod/latest"
-        ms_items = portfolio.get_symbols_for_provider(self.provider_name)
-        symbols = [x["symbol"] for x in ms_items]
+        symbols = portfolio.get_symbols()
         params = {"symbols": ",".join(symbols)}
         res = self.requester.query(url, params)
         data = res["data"]
-        l_res = [
-            {
-                "symbol": q["symbol"],
-                "data": MarketstackData(**self.fix_data(q)),
-            }
-            for q in data
-        ]
+        l_res = [MarketstackData(**self.fix_data(q)) for q in data]
         return l_res
 
     @property
