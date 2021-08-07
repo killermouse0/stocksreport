@@ -13,7 +13,7 @@ import provider
 
 @dataclass
 class FinnhubData(market_data_loader.MarketData):
-    t: int
+    """Dataclass holding a quote from Finnhub"""
 
 
 class FinnhubRequest(abc.ABC):
@@ -68,6 +68,7 @@ class Finnhub(provider.Provider):
     def fix_data(self, d: Dict[str, Any]) -> Dict[str, Any]:
         res = d.copy()
         res["date"] = datetime.fromtimestamp(d["t"]).date()
+        res.pop("t")
         return res
 
     def get_quote(self, symbol: str) -> FinnhubData:
