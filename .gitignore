@@ -6,3 +6,4 @@ htmlcov/
 .mypy_cache/
 .pytest_cache/
 .coverage
+secrets/
