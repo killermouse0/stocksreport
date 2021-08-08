@@ -49,6 +49,12 @@ class Kraken(provider.Provider):
         res = d.copy()
         res["date"] = datetime.datetime.fromtimestamp(d["time"]).date()
         res["provider"] = Kraken.provider_name
+        res["open"] = float(res["open"])
+        res["close"] = float(res["close"])
+        res["high"] = float(res["high"])
+        res["low"] = float(res["low"])
+        res["vwap"] = float(res["vwap"])
+        res["volume"] = float(res["volume"])
         res.pop("time")
         return res
 

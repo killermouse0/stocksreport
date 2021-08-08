@@ -1,5 +1,8 @@
+import json
 import os
 from typing import Sequence
+
+import boto3
 
 from market_data_loader import MarketData, MarketDataLoader
 from portfolio.csv_portfolio import CsvPortfolio
@@ -8,6 +11,8 @@ from provider.kraken import Kraken
 from provider.marketstack import Marketstack, MarketstackHttpRequest
 
 PTF = "ptf.csv"
+BUCKET = "sakana-stockpick-www"
+KEY = "data.js"
 
 
 class NoTokenError(Exception):
@@ -21,16 +26,19 @@ def get_token(token_env: str):
     return token
 
 
-def format_market_data(md: MarketData) -> str:
-    res = "{}:{}:{}:{}:{}:{}".format(
-        md.symbol, md.date, md.open, md.high, md.low, md.close
-    )
-    return res
-
-
-def print_quotes(quotes: Sequence[MarketData]):
+def render_quotes(quotes: Sequence[MarketData]):
+    res_quotes = []
     for q in quotes:
-        print(format_market_data(q))
+        keys = ["date", "symbol", "open", "close", "low", "high"]
+        values = [q.date, q.symbol, q.open, q.close, q.low, q.high]
+        res_q = dict(zip(keys, values))
+        res_quotes.append(res_q)
+    return "json_data = {}".format(json.dumps(res_quotes, default=str))
+
+
+def upload_s3(bucket: str, key: str, data: str):
+    s3 = boto3.client("s3")
+    s3.put_object(Bucket=bucket, Key=key, Body=bytearray(data, "utf-8"))
 
 
 def main(ptf_filename: str) -> None:
@@ -50,7 +58,8 @@ def main(ptf_filename: str) -> None:
 
     quotes = mdl.get_quotes()
 
-    print_quotes(quotes)
+    data = render_quotes(quotes)
+    upload_s3(BUCKET, KEY, data)
 
 
 if __name__ == "__main__":
