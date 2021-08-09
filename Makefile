@@ -4,7 +4,7 @@ PYTHON := /home/pi/gitRepos/stocks/.venv/bin/python
 .PHONY: tests run
 
 run:
-	$(PYTHON) /home/pi/gitRepos/stocks/main.py
+	./run.sh
 
 tests:
 	$(PYTEST) --cov-report=html --cov=provider --cov=portfolio tests/
