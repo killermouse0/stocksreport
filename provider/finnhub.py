@@ -65,7 +65,8 @@ class Finnhub(provider.Provider):
         res = dict(zip(keys, last_value))
         return res
 
-    def fix_data(self, d: Dict[str, Any]) -> Dict[str, Any]:
+    @staticmethod
+    def fix_data(d: Dict[str, Any]) -> Dict[str, Any]:
         res = d.copy()
         res["date"] = datetime.fromtimestamp(d["t"]).date()
         res.pop("t")

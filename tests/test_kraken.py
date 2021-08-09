@@ -1,14 +1,13 @@
-import datetime
 import os
 import sys
 from typing import Any, Dict
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-import provider.kraken  # noqa: E402
+from provider.kraken import Kraken, KrakenData, KrakenRequest  # noqa: E402
 
 
-class KrakenMockRequest(provider.kraken.KrakenRequest):
+class KrakenMockRequest(KrakenRequest):
     def query(self, url: str, params: Dict[str, Any]) -> Dict[str, Any]:
         return {
             "error": [],
@@ -71,10 +70,10 @@ class KrakenMockRequest(provider.kraken.KrakenRequest):
 
 
 def test_get_quote():
-    k = provider.kraken.Kraken(requester=KrakenMockRequest())
+    k = Kraken(requester=KrakenMockRequest())
     keys = [
         "symbol",
-        "date",
+        "time",
         "open",
         "high",
         "low",
@@ -86,7 +85,7 @@ def test_get_quote():
     ]
     values = [
         "XXBTZUSD",
-        datetime.datetime.fromtimestamp(1628121600).date(),
+        1628121600,
         "39749.0",
         "41403.5",
         "37355.0",
@@ -94,8 +93,8 @@ def test_get_quote():
         "39368.8",
         "4722.98596131",
         38580,
-        provider.kraken.Kraken.provider_name,
+        Kraken.provider_name,
     ]
-    expected = provider.kraken.KrakenData(**dict(zip(keys, values)))
+    expected = KrakenData(**Kraken.fix_data(dict(zip(keys, values))))
     res = k.get_quote("XXBTZUSD")
     assert expected == res

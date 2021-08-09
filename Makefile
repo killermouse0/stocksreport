@@ -1,7 +1,10 @@
+PYTEST := /home/pi/gitRepos/stocks/.venv/bin/pytest
+PYTHON := /home/pi/gitRepos/stocks/.venv/bin/python
+
 .PHONY: tests run
 
 run:
-	/home/pi/gitRepos/stocks/.venv/bin/python /home/pi/gitRepos/stocks/main.py
+	$(PYTHON) /home/pi/gitRepos/stocks/main.py
 
 tests:
-	pytest --cov-report=html --cov=provider --cov=portfolio tests/
+	$(PYTEST) --cov-report=html --cov=provider --cov=portfolio tests/

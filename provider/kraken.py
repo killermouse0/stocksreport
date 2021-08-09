@@ -45,7 +45,8 @@ class Kraken(provider.Provider):
         ten_days_ago_ts = today_ts - 10 * 24 * 60 * 60
         return ten_days_ago_ts
 
-    def fix_data(self, d: Dict[str, Any]) -> Dict[str, Any]:
+    @staticmethod
+    def fix_data(d: Dict[str, Any]) -> Dict[str, Any]:
         res = d.copy()
         res["date"] = datetime.datetime.fromtimestamp(d["time"]).date()
         res["provider"] = Kraken.provider_name

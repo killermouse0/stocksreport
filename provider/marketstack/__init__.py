@@ -62,7 +62,8 @@ class Marketstack(provider.Provider):
         data = res["data"][0]
         return MarketstackData(**self.fix_data(data))
 
-    def fix_data(self, d: Dict[str, Any]) -> Dict[str, Any]:
+    @staticmethod
+    def fix_data(d: Dict[str, Any]) -> Dict[str, Any]:
         res = d.copy()
         res["date"] = parser.parse(d["date"]).date()
         res["provider"] = Marketstack.provider_name
