@@ -11,7 +11,7 @@ from view.writer.console_writer import ConsoleWriter
 
 # from view.writer.s3_writer import S3Writer
 
-PTF = "ptf.csv"
+PTF = "data/ptf.csv"
 BUCKET = "sakana-stockpick-www"
 KEY = "data.js"
 
