@@ -5,7 +5,11 @@ from portfolio.csv_portfolio import CsvPortfolio
 from provider.finnhub import Finnhub, FinnhubHttpRequest
 from provider.kraken import Kraken
 from provider.marketstack import Marketstack, MarketstackHttpRequest
-from render.webfront_render import WebfrontRender
+from view.renderer.webfront_render import WebfrontRender
+from view.transformer.json_transformer import JsonTransformer
+from view.writer.console_writer import ConsoleWriter
+
+# from view.writer.s3_writer import S3Writer
 
 PTF = "ptf.csv"
 BUCKET = "sakana-stockpick-www"
@@ -34,15 +38,16 @@ def main(ptf_filename: str) -> None:
     )
     kr = Kraken()
 
-    # Initializing the Market Data Loader
+    # Initializing the Market Data Loader and getting the data
     mdl = MarketDataLoader(ptf)
     mdl.register_providers([ms, fh, kr])
-
-    # Initialize the renderer
-    renderer = WebfrontRender(BUCKET, KEY)
-
     quotes = mdl.get_quotes()
 
+    # Writing the data
+    transformer = JsonTransformer()
+    # writer = S3Writer(BUCKET, KEY)
+    writer = ConsoleWriter()
+    renderer = WebfrontRender(transformer=transformer, writer=writer)
     renderer.render(quotes=quotes)
 
 
