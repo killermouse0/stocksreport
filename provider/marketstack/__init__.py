@@ -1,59 +1,12 @@
-import abc
-from dataclasses import dataclass
 from typing import Any, Dict, Sequence
 
-import requests
 from dateutil import parser
 
-import market_data_loader
 import portfolio
 import provider
-
-
-@dataclass
-class MarketstackData(market_data_loader.MarketData):
-    adj_open: float
-    adj_high: float
-    adj_low: float
-    adj_close: float
-    adj_volume: float
-    volume: float
-    split_factor: float
-    exchange: str
-
-    def __post_init__(self):
-        self.open = self.adj_open if self.adj_open else self.open
-        self.high = self.adj_high if self.adj_high else self.high
-        self.low = self.adj_low if self.adj_low else self.low
-        self.close = self.adj_close if self.adj_close else self.close
-        self.volume = self.adj_volume if self.adj_volume else self.volume
-
-
-class MarketstackParameters(provider.ProviderParameters):
-    @abc.abstractmethod
-    def endpoint(self) -> str:
-        pass
-
-
-class MarketstackParametersLatestDayCandle(MarketstackParameters):
-    def endpoint(self) -> str:
-        return "eod/latest"
-
-
-class MarketstackRequest(abc.ABC):
-    @abc.abstractmethod
-    def query(self, url: str, params: Dict[str, str]) -> Dict[str, Any]:
-        pass
-
-
-class MarketstackHttpRequest(MarketstackRequest):
-    def __init__(self, token: str) -> None:
-        self._token = token
-
-    def query(self, url: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        params["access_key"] = self._token
-        res = requests.get(url, params=params)
-        return res.json()
+from provider.marketstack.data import MarketstackData
+from provider.marketstack.parameters import MarketstackParameters
+from provider.marketstack.request import MarketstackRequest
 
 
 class Marketstack(provider.Provider):
