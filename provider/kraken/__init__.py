@@ -1,65 +1,11 @@
-import abc
 import datetime
-import time
-from dataclasses import dataclass
 from typing import Any, Dict, Sequence
 
-import requests
-
-import market_data_loader
 import portfolio
 import provider
-
-
-@dataclass
-class KrakenData(market_data_loader.MarketData):
-    vwap: float
-    volume: float
-    num_trades: int
-    date: datetime.date
-
-
-class KrakenParameters(provider.ProviderParameters):
-    """Provides settings for Kraken provider"""
-
-    def get_interval():
-        pass
-
-    def get_since():
-        pass
-
-
-class KrakenParametersDayCandle(KrakenParameters):
-    """Provides parameters for Kraken Provider to fetch a day candle"""
-
-    def get_interval(self):
-        return 1440
-
-    @staticmethod
-    def ten_days_ago() -> int:
-        now_ts = int(time.time())
-        today_ts = now_ts - now_ts % (24 * 60 * 60)
-        ten_days_ago_ts = today_ts - 10 * 24 * 60 * 60
-        return ten_days_ago_ts
-
-    def get_since(self, d: datetime.date = None) -> int:
-        return self.ten_days_ago()
-
-
-# class KrakenParametersWeekCandle(KrakenParameters):
-#    """Provides parameters for Kraken Provider to fetch a week week candle"""
-
-
-class KrakenRequest(abc.ABC):
-    @abc.abstractmethod
-    def query(self, url: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        pass
-
-
-class KrakenHttpRequest(KrakenRequest):
-    def query(self, url: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
-        res = requests.get(url, params=params)
-        return res.json()
+from provider.kraken.data import KrakenData
+from provider.kraken.parameters import KrakenParameters, KrakenParametersDayCandle
+from provider.kraken.request import KrakenHttpRequest, KrakenRequest
 
 
 class Kraken(provider.Provider):
