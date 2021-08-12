@@ -29,6 +29,17 @@ class MarketstackData(market_data_loader.MarketData):
         self.volume = self.adj_volume if self.adj_volume else self.volume
 
 
+class MarketstackParameters(provider.ProviderParameters):
+    @abc.abstractmethod
+    def endpoint(self) -> str:
+        pass
+
+
+class MarketstackParametersLatestDayCandle(MarketstackParameters):
+    def endpoint(self) -> str:
+        return "eod/latest"
+
+
 class MarketstackRequest(abc.ABC):
     @abc.abstractmethod
     def query(self, url: str, params: Dict[str, str]) -> Dict[str, Any]:
@@ -51,14 +62,16 @@ class Marketstack(provider.Provider):
 
     def __init__(
         self,
+        parameters: MarketstackParameters,
         requester: MarketstackRequest,
     ):
-        self.requester = requester
+        self._parameters = parameters
+        self._requester = requester
 
     def get_quote(self, symbol: str):
-        url = f"{Marketstack.BASE_URI}/eod/latest"
+        url = f"{Marketstack.BASE_URI}/{self._parameters.endpoint()}"
         params = {"symbols": symbol}
-        res = self.requester.query(url, params)
+        res = self._requester.query(url, params)
         data = res["data"][0]
         return MarketstackData(**self.fix_data(data))
 
@@ -70,10 +83,10 @@ class Marketstack(provider.Provider):
         return res
 
     def get_quotes(self, portfolio: portfolio.Portfolio) -> Sequence[MarketstackData]:
-        url = f"{Marketstack.BASE_URI}/eod/latest"
+        url = f"{Marketstack.BASE_URI}/{self._parameters.endpoint()}"
         symbols = portfolio.get_symbols()
         params = {"symbols": ",".join(symbols)}
-        res = self.requester.query(url, params)
+        res = self._requester.query(url, params)
         data = res["data"]
         l_res = [MarketstackData(**self.fix_data(q)) for q in data]
         return l_res

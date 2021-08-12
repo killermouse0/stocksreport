@@ -78,7 +78,10 @@ class FinnhubMockRequest(provider.finnhub.FinnhubRequest):
 
 
 def test_get_quote():
-    ms = provider.finnhub.Finnhub(requester=FinnhubMockRequest())
+    ms = provider.finnhub.Finnhub(
+        parameters=provider.finnhub.FinnhubParametersDayCandle(),
+        requester=FinnhubMockRequest(),
+    )
     keys = ["symbol", "date", "open", "high", "low", "close", "provider"]
     values = [
         "AAPL",

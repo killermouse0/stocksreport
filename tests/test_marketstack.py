@@ -36,7 +36,10 @@ class MarketstackMockRequest(provider.marketstack.MarketstackRequest):
 
 
 def test_get_quote():
-    ms = provider.marketstack.Marketstack(requester=MarketstackMockRequest())
+    ms = provider.marketstack.Marketstack(
+        parameters=provider.marketstack.MarketstackParametersLatestDayCandle(),
+        requester=MarketstackMockRequest(),
+    )
     expected = provider.marketstack.MarketstackData(
         **{
             "open": 146.98,

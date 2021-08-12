@@ -4,7 +4,9 @@ from typing import Any, Dict
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-from provider.kraken import Kraken, KrakenData, KrakenRequest  # noqa: E402
+from provider.kraken import KrakenData  # noqa: E402
+from provider.kraken import KrakenParametersDayCandle  # noqa: E402
+from provider.kraken import Kraken, KrakenRequest  # noqa: E402
 
 
 class KrakenMockRequest(KrakenRequest):
@@ -70,7 +72,10 @@ class KrakenMockRequest(KrakenRequest):
 
 
 def test_get_quote():
-    k = Kraken(requester=KrakenMockRequest())
+    k = Kraken(
+        parameters=KrakenParametersDayCandle(),
+        requester=KrakenMockRequest(),
+    )
     keys = [
         "symbol",
         "time",

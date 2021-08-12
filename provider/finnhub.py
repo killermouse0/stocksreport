@@ -16,6 +16,42 @@ class FinnhubData(market_data_loader.MarketData):
     """Dataclass holding a quote from Finnhub"""
 
 
+class FinnhubParameters(provider.ProviderParameters):
+    """Provides settings for Kraken provider"""
+
+    def get_resolution():
+        pass
+
+    def get_from():
+        pass
+
+    def get_to():
+        pass
+
+
+class FinnhubParametersDayCandle(FinnhubParameters):
+    def __init__(self) -> None:
+        self._to = self.midnight()
+        self._from = self._to - timedelta(days=10)
+
+    @staticmethod
+    def midnight(ts: Union[int, None] = None) -> datetime:
+        if ts is None:
+            ts = int(time.time())
+        ts_midnight = ts - ts % (24 * 60 * 60)
+        dt_midnight = datetime.fromtimestamp(ts_midnight)
+        return dt_midnight
+
+    def get_resolution(self):
+        return "D"
+
+    def get_from(self):
+        return int(self._from.timestamp())
+
+    def get_to(self):
+        return int(self._to.timestamp())
+
+
 class FinnhubRequest(abc.ABC):
     @abc.abstractmethod
     def query(self, url: str, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -36,16 +72,9 @@ class Finnhub(provider.Provider):
     BASE_URI = "https://finnhub.io/api/v1"
     PROVIDER_NAME = "finnhub"
 
-    def __init__(self, requester: FinnhubRequest):
+    def __init__(self, parameters: FinnhubParameters, requester: FinnhubRequest):
+        self._parameters = parameters
         self._requester = requester
-
-    @staticmethod
-    def midnight(ts: Union[int, None] = None) -> datetime:
-        if ts is None:
-            ts = int(time.time())
-        ts_midnight = ts - ts % (24 * 60 * 60)
-        dt_midnight = datetime.fromtimestamp(ts_midnight)
-        return dt_midnight
 
     @staticmethod
     def get_latest_quote(quotes: dict):
@@ -73,14 +102,12 @@ class Finnhub(provider.Provider):
         return res
 
     def get_quote(self, symbol: str) -> FinnhubData:
-        to_date = Finnhub.midnight()
-        from_date = to_date - timedelta(days=10)
         url = f"{Finnhub.BASE_URI}/stock/candle"
         params = {
             "symbol": symbol,
-            "resolution": "D",
-            "from": int(from_date.timestamp()),
-            "to": int(to_date.timestamp()),
+            "resolution": self._parameters.get_resolution(),
+            "from": self._parameters.get_from(),
+            "to": self._parameters.get_to(),
         }
         res = self._requester.query(url, params)
         res["symbol"] = symbol
