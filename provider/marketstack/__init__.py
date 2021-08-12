@@ -5,8 +5,11 @@ from dateutil import parser
 import portfolio
 import provider
 from provider.marketstack.data import MarketstackData
-from provider.marketstack.parameters import MarketstackParameters
-from provider.marketstack.request import MarketstackRequest
+from provider.marketstack.parameters import (
+    MarketstackParameters,
+    MarketstackParametersLatestDayCandle,
+)
+from provider.marketstack.request import MarketstackHttpRequest, MarketstackRequest
 
 
 class Marketstack(provider.Provider):
