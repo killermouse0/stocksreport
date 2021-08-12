@@ -1,71 +1,11 @@
-import abc
-import time
-from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Any, Dict, Sequence, Union
+from datetime import datetime
+from typing import Any, Dict, Sequence
 
-import requests
-
-import market_data_loader
 import portfolio
 import provider
-
-
-@dataclass
-class FinnhubData(market_data_loader.MarketData):
-    """Dataclass holding a quote from Finnhub"""
-
-
-class FinnhubParameters(provider.ProviderParameters):
-    """Provides settings for Kraken provider"""
-
-    def get_resolution():
-        pass
-
-    def get_from():
-        pass
-
-    def get_to():
-        pass
-
-
-class FinnhubParametersDayCandle(FinnhubParameters):
-    def __init__(self) -> None:
-        self._to = self.midnight()
-        self._from = self._to - timedelta(days=10)
-
-    @staticmethod
-    def midnight(ts: Union[int, None] = None) -> datetime:
-        if ts is None:
-            ts = int(time.time())
-        ts_midnight = ts - ts % (24 * 60 * 60)
-        dt_midnight = datetime.fromtimestamp(ts_midnight)
-        return dt_midnight
-
-    def get_resolution(self):
-        return "D"
-
-    def get_from(self):
-        return int(self._from.timestamp())
-
-    def get_to(self):
-        return int(self._to.timestamp())
-
-
-class FinnhubRequest(abc.ABC):
-    @abc.abstractmethod
-    def query(self, url: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        pass
-
-
-class FinnhubHttpRequest(FinnhubRequest):
-    def __init__(self, token: str) -> None:
-        self._token = token
-
-    def query(self, url: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
-        headers = {"X-Finnhub-Token": self._token}
-        res = requests.get(url, params=params, headers=headers)
-        return res.json()
+from provider.finnhub.data import FinnhubData
+from provider.finnhub.parameters import FinnhubParameters, FinnhubParametersDayCandle
+from provider.finnhub.request import FinnhubHttpRequest, FinnhubRequest
 
 
 class Finnhub(provider.Provider):
