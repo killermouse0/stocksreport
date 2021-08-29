@@ -1,14 +1,21 @@
 import os
 import sys
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any, Dict
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-import provider.finnhub  # noqa: E402
+from helpers.datetime import DateTime
+from provider.finnhub import FinnhubData  # noqa: E402
+from provider.finnhub import FinnhubRequest  # noqa: E402
+from provider.finnhub import (  # noqa: E402
+    Finnhub,
+    FinnhubParametersDayCandle,
+    FinnhubParametersWeekCandle,
+)
 
 
-class FinnhubMockRequest(provider.finnhub.FinnhubRequest):
+class FinnhubMockRequest(FinnhubRequest):
     def query(self, url: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
         res = {
             "c": [
@@ -77,9 +84,12 @@ class FinnhubMockRequest(provider.finnhub.FinnhubRequest):
         return res
 
 
+today = DateTime(today=date(2021, 8, 12))
+
+
 def test_get_quote():
-    ms = provider.finnhub.Finnhub(
-        parameters=provider.finnhub.FinnhubParametersDayCandle(),
+    ms = Finnhub(
+        parameters=FinnhubParametersDayCandle(today=today),
         requester=FinnhubMockRequest(),
     )
     keys = ["symbol", "date", "open", "high", "low", "close", "provider"]
@@ -90,8 +100,25 @@ def test_get_quote():
         124.47762543593429,
         123.6097535454447,
         123.79572609340676,
-        provider.finnhub.Finnhub.provider_name,
+        Finnhub.provider_name,
     ]
-    expected = provider.finnhub.FinnhubData(**dict(zip(keys, values)))
+    expected = FinnhubData(**dict(zip(keys, values)))
     res = ms.get_quote("AAPL")
     assert expected == res
+
+
+def test_day_candle():
+    week_candle = FinnhubParametersDayCandle(today)
+    assert week_candle.get_resolution() == "D"
+    assert week_candle.get_to() == 1628726400
+    assert week_candle.get_from() == 1628726400 - 10 * 24 * 60 * 60
+    assert type(week_candle.get_from()) == int
+    assert type(week_candle.get_to()) == int
+
+
+def test_week_candle():
+    week_candle = FinnhubParametersWeekCandle(today=today)
+    assert week_candle.get_resolution() == "W"
+    assert week_candle.get_to() == 1628726400
+    two_weeks_ago = 1628726400 - 14 * 24 * 60 * 60
+    assert week_candle.get_from() == two_weeks_ago

@@ -1,35 +1,43 @@
-import datetime
-import time
-
+from helpers.datetime import DateTime
 from provider import ProviderParameters
 
 
 class KrakenParameters(ProviderParameters):
     """Provides settings for Kraken provider"""
 
-    def get_interval():
+    def __init__(self, today: DateTime):
+        self._today = today
+
+    def get_interval(self):
         """Provides the interval parameter"""
 
-    def get_since():
+    def get_since(self):
         """Provides the since parameter"""
 
 
 class KrakenParametersDayCandle(KrakenParameters):
     """Provides parameters for Kraken Provider to fetch a day candle"""
 
+    def __init__(self, today: DateTime):
+        super().__init__(today)
+        self._since = self._today.get_days_ago_ts(10)
+
     def get_interval(self):
         return 1440
 
-    @staticmethod
-    def ten_days_ago() -> int:
-        now_ts = int(time.time())
-        today_ts = now_ts - now_ts % (24 * 60 * 60)
-        ten_days_ago_ts = today_ts - 10 * 24 * 60 * 60
-        return ten_days_ago_ts
-
-    def get_since(self, d: datetime.date = None) -> int:
-        return self.ten_days_ago()
+    def get_since(self) -> int:
+        return self._since
 
 
-# class KrakenParametersWeekCandle(KrakenParameters):
-#    """Provides parameters for Kraken Provider to fetch a week week candle"""
+class KrakenParametersWeekCandle(KrakenParameters):
+    """Provides parameters for Kraken Provider to fetch a week week candle"""
+
+    def __init__(self, today: DateTime):
+        super().__init__(today)
+        self._since = self._today.get_days_ago_ts(14)
+
+    def get_interval(self):
+        return 10080
+
+    def get_since(self):
+        return self._since

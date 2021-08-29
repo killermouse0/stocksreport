@@ -1,12 +1,22 @@
+import json
 import os
 import sys
+from datetime import date
 from typing import Any, Dict
 
 from dateutil import parser
 
+from helpers.datetime import DateTime
+
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
+import pytest
+
+import portfolio
 import provider.marketstack  # noqa: E402
+
+today = DateTime(date(2021, 8, 12))
+ptf = portfolio.Portfolio.from_rows([portfolio.PortfolioRow("BNP.XPAR", "marketstack")])
 
 
 class MarketstackMockRequest(provider.marketstack.MarketstackRequest):
@@ -35,9 +45,20 @@ class MarketstackMockRequest(provider.marketstack.MarketstackRequest):
         return res
 
 
+class MarketstackMockRequestWeek(provider.marketstack.MarketstackRequest):
+    def __init__(self, filename: str) -> None:
+        with open(filename) as file:
+            self.json_data = json.load(file)
+
+    def query(self, url: str, params: Dict[str, str]) -> Dict[str, Any]:
+        return self.json_data
+
+
 def test_get_quote():
     ms = provider.marketstack.Marketstack(
-        parameters=provider.marketstack.MarketstackParametersLatestDayCandle(),
+        parameters=provider.marketstack.MarketstackParametersLatestDayCandle(
+            today=today
+        ),
         requester=MarketstackMockRequest(),
     )
     expected = provider.marketstack.MarketstackData(
@@ -61,3 +82,23 @@ def test_get_quote():
     )
     res = ms.get_quote("AAPL")
     assert expected == res
+
+
+def test_week_candle():
+    ms = provider.marketstack.Marketstack(
+        parameters=provider.marketstack.MarketstackParametersWeekCandle(today=today),
+        requester=MarketstackMockRequestWeek(
+            filename="tests/data/marketstack_week.json"
+        ),
+    )
+    quotes = ms.get_quotes(ptf)
+
+    with pytest.raises(StopIteration) as exc_info:
+        next((q for q in quotes if q.symbol == "TSLAX"))
+    assert exc_info.errisinstance(StopIteration)
+
+    tsla = next((q for q in quotes if q.symbol == "TSLA"))
+    assert tsla.symbol == "TSLA"
+    assert tsla.date == date(2021, 8, 12)
+    assert tsla.low == 648.84
+    assert tsla.high == 729.9

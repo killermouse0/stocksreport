@@ -1,12 +1,17 @@
 import os
 import sys
+from datetime import date
 from typing import Any, Dict
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
+from helpers.datetime import DateTime
 from provider.kraken import KrakenData  # noqa: E402
 from provider.kraken import KrakenParametersDayCandle  # noqa: E402
+from provider.kraken import KrakenParametersWeekCandle  # noqa: E402
 from provider.kraken import Kraken, KrakenRequest  # noqa: E402
+
+today = DateTime(date(2021, 8, 12))
 
 
 class KrakenMockRequest(KrakenRequest):
@@ -73,7 +78,7 @@ class KrakenMockRequest(KrakenRequest):
 
 def test_get_quote():
     k = Kraken(
-        parameters=KrakenParametersDayCandle(),
+        parameters=KrakenParametersDayCandle(today=today),
         requester=KrakenMockRequest(),
     )
     keys = [
@@ -103,3 +108,9 @@ def test_get_quote():
     expected = KrakenData(**Kraken.fix_data(dict(zip(keys, values))))
     res = k.get_quote("XXBTZUSD")
     assert expected == res
+
+
+def test_week_candle():
+    week_candle = KrakenParametersWeekCandle(today=today)
+    assert week_candle.get_interval() == 7 * 24 * 60
+    assert week_candle.get_since() == 1627516800

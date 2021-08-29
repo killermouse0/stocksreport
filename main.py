@@ -1,5 +1,6 @@
 import os
 
+from helpers.datetime import DateTime
 from market_data_loader import MarketDataLoader
 from portfolio.csv_portfolio import CsvPortfolio
 from provider.finnhub import Finnhub, FinnhubHttpRequest, FinnhubParametersDayCandle
@@ -32,19 +33,25 @@ def get_token(token_env: str):
 
 
 def main(ptf_filename: str) -> None:
+
+    # Which day are we interested in
+    today = DateTime.today()
+
     # Loading the portfolio
     ptf = CsvPortfolio(ptf_filename)
 
     # Initializing the providers
     fh = Finnhub(
         requester=FinnhubHttpRequest(token=get_token("FINNHUB_TOKEN")),
-        parameters=FinnhubParametersDayCandle(),
+        parameters=FinnhubParametersDayCandle(today=today),
     )
     ms = Marketstack(
-        parameters=MarketstackParametersLatestDayCandle(),
+        parameters=MarketstackParametersLatestDayCandle(today=today),
         requester=MarketstackHttpRequest(token=get_token("MARKETSTACK_TOKEN")),
     )
-    kr = Kraken(parameters=KrakenParametersDayCandle(), requester=KrakenHttpRequest())
+    kr = Kraken(
+        parameters=KrakenParametersDayCandle(today=today), requester=KrakenHttpRequest()
+    )
 
     # Initializing the Market Data Loader and getting the data
     mdl = MarketDataLoader(ptf)

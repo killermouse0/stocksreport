@@ -1,41 +1,49 @@
-import time
-from datetime import datetime, timedelta
-from typing import Union
-
+from helpers.datetime import DateTime
 from provider import ProviderParameters
 
 
 class FinnhubParameters(ProviderParameters):
     """Provides settings for Kraken provider"""
 
-    def get_resolution():
+    def __init__(self, today: DateTime) -> None:
+        self._today = today
+        self._to = self._today.get_midnight_ts()
+
+    def get_resolution(self):
         pass
 
-    def get_from():
+    def get_from(self):
         pass
 
-    def get_to():
+    def get_to(self):
         pass
 
 
 class FinnhubParametersDayCandle(FinnhubParameters):
-    def __init__(self) -> None:
-        self._to = self.midnight()
-        self._from = self._to - timedelta(days=10)
-
-    @staticmethod
-    def midnight(ts: Union[int, None] = None) -> datetime:
-        if ts is None:
-            ts = int(time.time())
-        ts_midnight = ts - ts % (24 * 60 * 60)
-        dt_midnight = datetime.fromtimestamp(ts_midnight)
-        return dt_midnight
+    def __init__(self, today: DateTime) -> None:
+        super().__init__(today=today)
+        self._from = self._today.get_days_ago_ts(10)
 
     def get_resolution(self):
         return "D"
 
     def get_from(self):
-        return int(self._from.timestamp())
+        return self._from
 
     def get_to(self):
-        return int(self._to.timestamp())
+        return self._to
+
+
+class FinnhubParametersWeekCandle(FinnhubParameters):
+    def __init__(self, today: DateTime) -> None:
+        super().__init__(today=today)
+        self._from = self._today.get_days_ago_ts(14)
+
+    def get_resolution(self):
+        return "W"
+
+    def get_from(self):
+        return self._from
+
+    def get_to(self):
+        return self._to

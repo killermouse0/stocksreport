@@ -4,7 +4,11 @@ from typing import Any, Dict, Sequence
 import portfolio
 import provider
 from provider.kraken.data import KrakenData
-from provider.kraken.parameters import KrakenParameters, KrakenParametersDayCandle
+from provider.kraken.parameters import (
+    KrakenParameters,
+    KrakenParametersDayCandle,
+    KrakenParametersWeekCandle,
+)
 from provider.kraken.request import KrakenHttpRequest, KrakenRequest
 
 

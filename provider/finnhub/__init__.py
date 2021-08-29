@@ -4,7 +4,11 @@ from typing import Any, Dict, Sequence
 import portfolio
 import provider
 from provider.finnhub.data import FinnhubData
-from provider.finnhub.parameters import FinnhubParameters, FinnhubParametersDayCandle
+from provider.finnhub.parameters import (
+    FinnhubParameters,
+    FinnhubParametersDayCandle,
+    FinnhubParametersWeekCandle,
+)
 from provider.finnhub.request import FinnhubHttpRequest, FinnhubRequest
 
 
