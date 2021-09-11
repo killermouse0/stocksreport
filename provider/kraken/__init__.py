@@ -16,7 +16,10 @@ class Kraken(provider.Provider):
     BASE_URI = "https://api.kraken.com/0/public/"
     PROVIDER_NAME = "kraken"
 
-    def __init__(self, parameters: KrakenParameters, requester: KrakenRequest) -> None:
+    def __init__(
+        self, id: str, parameters: KrakenParameters, requester: KrakenRequest
+    ) -> None:
+        self._id = id
         self._parameters = parameters
         self._requester = requester
 

@@ -29,3 +29,6 @@ class Provider(ABC):
     @abstractproperty
     def provider_name(self) -> str:
         pass
+
+    def get_id(self):
+        return self._id

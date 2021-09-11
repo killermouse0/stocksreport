@@ -56,6 +56,7 @@ class MarketstackMockRequestWeek(provider.marketstack.MarketstackRequest):
 
 def test_get_quote():
     ms = provider.marketstack.Marketstack(
+        id="test_quote",
         parameters=provider.marketstack.MarketstackParametersLatestDayCandle(
             today=today
         ),
@@ -86,6 +87,7 @@ def test_get_quote():
 
 def test_week_candle():
     ms = provider.marketstack.Marketstack(
+        id="test_week_candle",
         parameters=provider.marketstack.MarketstackParametersWeekCandle(today=today),
         requester=MarketstackMockRequestWeek(
             filename="tests/data/marketstack_week.json"
@@ -102,3 +104,16 @@ def test_week_candle():
     assert tsla.date == date(2021, 8, 12)
     assert tsla.low == 648.84
     assert tsla.high == 729.9
+    assert tsla.open == 706.34
+    assert tsla.close == 673.47
+
+
+def test_get_id():
+    ms = provider.marketstack.Marketstack(
+        id="test_quote",
+        parameters=provider.marketstack.MarketstackParametersLatestDayCandle(
+            today=today
+        ),
+        requester=MarketstackMockRequest(),
+    )
+    assert ms.get_id() == "test_quote"

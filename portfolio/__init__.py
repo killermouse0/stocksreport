@@ -1,4 +1,5 @@
 import abc
+import logging
 from dataclasses import dataclass
 from typing import List, Sequence
 
@@ -30,6 +31,7 @@ class Portfolio:
         return syms
 
     def filter_provider(self, provider: str) -> "Portfolio":
+        logging.debug(f"Filtering portfolio for provider {repr(provider)}")
         return Portfolio.from_rows(
             [r for r in self._portfolio if r.provider == provider]
         )

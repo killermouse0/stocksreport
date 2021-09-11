@@ -78,6 +78,7 @@ class KrakenMockRequest(KrakenRequest):
 
 def test_get_quote():
     k = Kraken(
+        id="kraken_test_get_quote",
         parameters=KrakenParametersDayCandle(today=today),
         requester=KrakenMockRequest(),
     )
@@ -114,3 +115,12 @@ def test_week_candle():
     week_candle = KrakenParametersWeekCandle(today=today)
     assert week_candle.get_interval() == 7 * 24 * 60
     assert week_candle.get_since() == 1627516800
+
+
+def test_get_id():
+    k = Kraken(
+        id="kraken_test_get_quote",
+        parameters=KrakenParametersDayCandle(today=today),
+        requester=KrakenMockRequest(),
+    )
+    assert k.get_id() == "kraken_test_get_quote"

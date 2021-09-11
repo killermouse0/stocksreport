@@ -21,9 +21,11 @@ class Marketstack(provider.Provider):
 
     def __init__(
         self,
+        id: str,
         parameters: MarketstackParameters,
         requester: MarketstackRequest,
     ):
+        self._id = id
         self._parameters = parameters
         self._requester = requester
 
@@ -95,7 +97,7 @@ class Marketstack(provider.Provider):
         return candles
 
     def summerize_data(self, quotes: Sequence[MarketstackData]):
-        candles = reduce(self.update_candles, quotes, {})
+        candles: Dict[str, MarketstackData] = reduce(self.update_candles, quotes, {})
         res = []
         print("Number of candle items = ", len(candles.items()))
         for (symbol, data) in candles.items():

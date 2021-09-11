@@ -88,7 +88,8 @@ today = DateTime(today=date(2021, 8, 12))
 
 
 def test_get_quote():
-    ms = Finnhub(
+    fh = Finnhub(
+        id="test_get_quote",
         parameters=FinnhubParametersDayCandle(today=today),
         requester=FinnhubMockRequest(),
     )
@@ -103,7 +104,7 @@ def test_get_quote():
         Finnhub.provider_name,
     ]
     expected = FinnhubData(**dict(zip(keys, values)))
-    res = ms.get_quote("AAPL")
+    res = fh.get_quote("AAPL")
     assert expected == res
 
 
@@ -122,3 +123,12 @@ def test_week_candle():
     assert week_candle.get_to() == 1628726400
     two_weeks_ago = 1628726400 - 14 * 24 * 60 * 60
     assert week_candle.get_from() == two_weeks_ago
+
+
+def test_get_id():
+    fh = Finnhub(
+        id="test_get_quote",
+        parameters=FinnhubParametersDayCandle(today=today),
+        requester=FinnhubMockRequest(),
+    )
+    assert fh.get_id() == "test_get_quote"

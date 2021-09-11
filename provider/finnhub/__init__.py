@@ -16,7 +16,10 @@ class Finnhub(provider.Provider):
     BASE_URI = "https://finnhub.io/api/v1"
     PROVIDER_NAME = "finnhub"
 
-    def __init__(self, parameters: FinnhubParameters, requester: FinnhubRequest):
+    def __init__(
+        self, id: str, parameters: FinnhubParameters, requester: FinnhubRequest
+    ):
+        self._id = id
         self._parameters = parameters
         self._requester = requester
 
