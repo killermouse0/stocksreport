@@ -77,7 +77,8 @@ def test_get_quote():
             "split_factor": 1.0,
             "symbol": "AAPL",
             "exchange": "XNAS",
-            "date": parser.parse("2021-08-05T00:00:00+0000").date(),
+            "open_date": parser.parse("2021-08-05T00:00:00+0000").date(),
+            "close_date": parser.parse("2021-08-05T00:00:00+0000").date(),
             "provider": provider.marketstack.Marketstack.provider_name,
         }
     )
@@ -101,7 +102,8 @@ def test_week_candle():
 
     tsla = next((q for q in quotes if q.symbol == "TSLA"))
     assert tsla.symbol == "TSLA"
-    assert tsla.date == date(2021, 8, 12)
+    assert tsla.open_date == date(2021, 8, 12)
+    assert tsla.close_date == date(2021, 8, 19)
     assert tsla.low == 648.84
     assert tsla.high == 729.9
     assert tsla.open == 706.34

@@ -30,5 +30,6 @@ class Provider(ABC):
     def provider_name(self) -> str:
         pass
 
-    def get_id(self):
+    @property
+    def id(self):
         return self._id

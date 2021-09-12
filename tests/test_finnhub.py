@@ -93,9 +93,19 @@ def test_get_quote():
         parameters=FinnhubParametersDayCandle(today=today),
         requester=FinnhubMockRequest(),
     )
-    keys = ["symbol", "date", "open", "high", "low", "close", "provider"]
+    keys = [
+        "symbol",
+        "open_date",
+        "close_date",
+        "open",
+        "high",
+        "low",
+        "close",
+        "provider",
+    ]
     values = [
         "AAPL",
+        datetime.fromtimestamp(1627689600).date(),
         datetime.fromtimestamp(1627689600).date(),
         123.98169864136881,
         124.47762543593429,

@@ -1,6 +1,9 @@
+import logging
 from csv import DictReader
 
 from portfolio import Portfolio, PortfolioRow
+
+logger = logging.getLogger("market_data_loader")
 
 
 class CsvPortfolio(Portfolio):

@@ -26,7 +26,8 @@ class Kraken(provider.Provider):
     @staticmethod
     def fix_data(d: Dict[str, Any]) -> Dict[str, Any]:
         res = d.copy()
-        res["date"] = datetime.datetime.fromtimestamp(d["time"]).date()
+        res["open_date"] = datetime.datetime.fromtimestamp(d["time"]).date()
+        res["close_date"] = res["open_date"]
         res["provider"] = Kraken.provider_name
         res["open"] = float(res["open"])
         res["close"] = float(res["close"])

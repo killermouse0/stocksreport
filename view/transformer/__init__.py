@@ -9,5 +9,5 @@ class Transformer(ABC):
     into a string that can be written out / stored"""
 
     @abstractmethod
-    def transform(self, quotes: Sequence[MarketData]) -> str:
+    def transform(self, var_name: str, quotes: Sequence[MarketData]) -> str:
         """Method doing the actual transformation"""

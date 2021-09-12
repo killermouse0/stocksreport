@@ -15,9 +15,11 @@ class PortfolioRow(abc.ABC):
 class Portfolio:
     def __init__(self) -> None:
         self._portfolio: List[PortfolioRow] = []
+        self._num_rows = 0
 
     def add_row(self, row: PortfolioRow) -> None:
         self._portfolio.append(row)
+        self._num_rows += 1
 
     @classmethod
     def from_rows(cls, rows: Sequence[PortfolioRow]) -> "Portfolio":
@@ -35,3 +37,7 @@ class Portfolio:
         return Portfolio.from_rows(
             [r for r in self._portfolio if r.provider == provider]
         )
+
+    @property
+    def num_rows(self):
+        return self._num_rows

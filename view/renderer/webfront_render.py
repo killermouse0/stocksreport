@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Dict, Sequence
 
 from market_data_loader import MarketData
 from view import Render
@@ -13,6 +13,9 @@ class WebfrontRender(Render):
         self.transformer = transformer
         self.writer = writer
 
-    def render(self, quotes: Sequence[MarketData]):
-        json_data = self.transformer.transform(quotes)
-        self.writer.write(json_data)
+    def render(self, quotes_by_id: Dict[str, Sequence[MarketData]]):
+        json_data_by_id = {
+            id: self.transformer.transform(f"data_{id}", quotes)
+            for (id, quotes) in quotes_by_id.items()
+        }
+        self.writer.write(json_data_by_id)

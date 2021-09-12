@@ -1,4 +1,5 @@
 import logging
+import logging.config
 import os
 
 from helpers.datetime import DateTime
@@ -22,9 +23,7 @@ from view.writer.s3_writer import S3Writer
 
 PTF = "data/ptf.csv"
 BUCKET = "sakana-stockpick-www"
-KEY_DAY = "data-day.js"
-KEY_WEEK = "data-week.js"
-KEY_MONTH = "data-month.js"
+S3_PREFIX = "data"
 
 
 class NoTokenError(Exception):
@@ -92,12 +91,12 @@ def main(ptf_filename: str) -> None:
 
     # Writing the data
     transformer = JsonTransformer()
-    writer = S3Writer(BUCKET, KEY_DAY)
+    writer = S3Writer(BUCKET, S3_PREFIX)
     # writer = ConsoleWriter()
     renderer = WebfrontRender(transformer=transformer, writer=writer)
-    renderer.render(quotes=quotes)
+    renderer.render(quotes_by_id=quotes)
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level="DEBUG")
+    logging.config.fileConfig("logging.conf")
     main(PTF)

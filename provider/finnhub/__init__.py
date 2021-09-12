@@ -44,7 +44,8 @@ class Finnhub(provider.Provider):
     @staticmethod
     def fix_data(d: Dict[str, Any]) -> Dict[str, Any]:
         res = d.copy()
-        res["date"] = datetime.fromtimestamp(d["t"]).date()
+        res["open_date"] = datetime.fromtimestamp(d["t"]).date()
+        res["close_date"] = res["open_date"]
         res.pop("t")
         return res
 
