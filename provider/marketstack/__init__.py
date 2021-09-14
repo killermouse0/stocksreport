@@ -1,4 +1,4 @@
-import dataclasses
+import logging
 from functools import reduce, update_wrapper
 from typing import Any, Dict, Sequence
 
@@ -13,6 +13,8 @@ from provider.marketstack.parameters import (
     MarketstackParametersWeekCandle,
 )
 from provider.marketstack.request import MarketstackHttpRequest, MarketstackRequest
+
+logger = logging.getLogger("marketstack")
 
 
 class Marketstack(provider.Provider):

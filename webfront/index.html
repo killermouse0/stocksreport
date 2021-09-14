@@ -46,7 +46,8 @@
         </ul>
       </div>
       <div class="row">
-        <div class="col-4 col-lg border bg-warning"><strong>Date</strong></div>
+        <div class="col-4 col-lg border bg-warning"><strong>Start</strong></div>
+        <div class="col-4 col-lg border bg-warning"><strong>End</strong></div>
         <div class="col-4 col-lg border bg-warning"><strong>Symbol</strong></div>
         <div class="col-4 col-lg border bg-warning"><strong></strong></div>
         <div class="col border text-end"><strong>Open</strong></div>
@@ -59,6 +60,7 @@
       <div class="tab-content">
         <div id="day" class="tab-pane show active" role="tabpanel" aria-labelledby="day-tab">
           <div class="row" v-for="quote in extendedDayQuotes">
+            <div class="col-4 col-lg border bg-warning"><em>{{quote.open_date}}</em></div>
             <div class="col-4 col-lg border bg-warning"><em>{{quote.close_date}}</em></div>
             <div class="col-4 col-lg border bg-warning"><em>{{quote.symbol}}</em></div>
             <div class="col-4 col-lg border text-center bg-warning text-success" v-if="quote.var > 1"><i
@@ -79,6 +81,7 @@
         <div id="week" class="tab-pane" role="tabpanel" aria-labelledby="week-tab">
           <div class="row" v-for="quote in extendedWeekQuotes">
             <div class="col-4 col-lg border bg-warning"><em>{{quote.open_date}}</em></div>
+            <div class="col-4 col-lg border bg-warning"><em>{{quote.close_date}}</em></div>
             <div class="col-4 col-lg border bg-warning"><em>{{quote.symbol}}</em></div>
             <div class="col-4 col-lg border text-center bg-warning text-success" v-if="quote.var > 1"><i
                 class="bi bi-arrow-up-right-circle-fill"></i>

@@ -1,8 +1,11 @@
+import logging
 from abc import abstractmethod
 from typing import Any, Dict
 
 from helpers.datetime import DateTime
 from provider import ProviderParameters
+
+logger = logging.getLogger("marketstack")
 
 
 class MarketstackParameters(ProviderParameters):
@@ -32,6 +35,10 @@ class MarketstackParametersWeekCandle(MarketstackParameters):
         super().__init__(today)
         self._date_from = today.get_days_ago(7)
         self._date_to = today.get_today()
+        logger.debug(
+            "Created MarketstackParameterWeekCandle"
+            f" from {self._date_from} to {self._date_to}"
+        )
 
     def endpoint(self) -> str:
         return "eod"

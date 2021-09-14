@@ -1,4 +1,5 @@
-from datetime import datetime
+import logging
+from datetime import datetime, timedelta
 from typing import Any, Dict, Sequence
 
 import portfolio
@@ -10,6 +11,8 @@ from provider.finnhub.parameters import (
     FinnhubParametersWeekCandle,
 )
 from provider.finnhub.request import FinnhubHttpRequest, FinnhubRequest
+
+logger = logging.getLogger("finnhub")
 
 
 class Finnhub(provider.Provider):
@@ -28,28 +31,34 @@ class Finnhub(provider.Provider):
         keys = ["symbol", "t", "open", "high", "low", "close", "provider"]
         syms = [quotes["symbol"]] * len(quotes["t"])
         provs = [Finnhub.provider_name] * len(quotes["t"])
-        values = zip(
-            syms,
-            quotes["t"],
-            quotes["o"],
-            quotes["h"],
-            quotes["l"],
-            quotes["c"],
-            provs,
+        values = list(
+            zip(
+                syms,
+                quotes["t"],
+                quotes["o"],
+                quotes["h"],
+                quotes["l"],
+                quotes["c"],
+                provs,
+            )
         )
-        last_value = list(values)[-1]
+        logger.debug(f"values = {repr(values)}")
+        last_value = values[-1]
         res = dict(zip(keys, last_value))
+        logger.debug(f"Last values = {repr(res)}")
         return res
 
     @staticmethod
-    def fix_data(d: Dict[str, Any]) -> Dict[str, Any]:
+    def fix_data(d: Dict[str, Any], interval: timedelta) -> Dict[str, Any]:
         res = d.copy()
-        res["open_date"] = datetime.fromtimestamp(d["t"]).date()
-        res["close_date"] = res["open_date"]
+        dt = datetime.fromtimestamp(d["t"])
+        res["close_date"] = dt.date()
+        res["open_date"] = (dt - interval).date()
         res.pop("t")
         return res
 
     def get_quote(self, symbol: str) -> FinnhubData:
+        logger.debug("get_quote")
         url = f"{Finnhub.BASE_URI}/stock/candle"
         params = {
             "symbol": symbol,
@@ -57,10 +66,14 @@ class Finnhub(provider.Provider):
             "from": self._parameters.get_from(),
             "to": self._parameters.get_to(),
         }
+        logger.debug(f"Params {params}")
         res = self._requester.query(url, params)
+        logger.debug(f"Res = {repr(res)}")
         res["symbol"] = symbol
         latest_quote = Finnhub.get_latest_quote(res)
-        fh_res = FinnhubData(**self.fix_data(latest_quote))
+        fh_res = FinnhubData(
+            **self.fix_data(latest_quote, self._parameters.get_interval())
+        )
         return fh_res
 
     def get_quotes(self, ptf: portfolio.Portfolio) -> Sequence[FinnhubData]:
