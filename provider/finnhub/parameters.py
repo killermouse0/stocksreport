@@ -61,4 +61,4 @@ class FinnhubParametersWeekCandle(FinnhubParameters):
         return self._to
 
     def get_interval(self):
-        return timedelta(days=7)
+        return timedelta(days=5)

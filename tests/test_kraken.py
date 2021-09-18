@@ -106,7 +106,7 @@ def test_get_quote():
         38580,
         Kraken.provider_name,
     ]
-    expected = KrakenData(**Kraken.fix_data(dict(zip(keys, values))))
+    expected = KrakenData(**Kraken.fix_data(dict(zip(keys, values)), 1628726400))
     res = k.get_quote("XXBTZUSD")
     assert expected == res
 
@@ -114,7 +114,7 @@ def test_get_quote():
 def test_week_candle():
     week_candle = KrakenParametersWeekCandle(today=today)
     assert week_candle.get_interval() == 7 * 24 * 60
-    assert week_candle.get_since() == 1627516800
+    assert week_candle.get_since() == 1628726400
 
 
 def test_get_id():

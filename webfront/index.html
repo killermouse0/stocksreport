@@ -118,7 +118,7 @@
             q1.close_date = q.close_date
             q1.symbol = q.symbol
             q1.var = (100.0 * (q.close - q.open) / q.open)
-            q1.varText = (q1.var < 0 ? "" : "+") + q1.var.toFixed(2) + "&percnt;"
+            q1.varText = (q1.var < 0 ? "" : "+") + q1.var.toFixed(2) + " %"
             q1.open = q.open.toFixed(2)
             q1.low = q.low.toFixed(2)
             q1.high = q.high.toFixed(2)
@@ -135,7 +135,7 @@
             q1.close_date = q.close_date
             q1.symbol = q.symbol
             q1.var = (100.0 * (q.close - q.open) / q.open)
-            q1.varText = (q1.var < 0 ? "" : "+") + q1.var.toFixed(2) + "&percnt;"
+            q1.varText = (q1.var < 0 ? "" : "+") + q1.var.toFixed(2) + " %"
             q1.open = q.open.toFixed(2)
             q1.low = q.low.toFixed(2)
             q1.high = q.high.toFixed(2)

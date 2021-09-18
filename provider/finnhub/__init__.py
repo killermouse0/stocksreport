@@ -52,8 +52,8 @@ class Finnhub(provider.Provider):
     def fix_data(d: Dict[str, Any], interval: timedelta) -> Dict[str, Any]:
         res = d.copy()
         dt = datetime.fromtimestamp(d["t"])
-        res["close_date"] = dt.date()
-        res["open_date"] = (dt - interval).date()
+        res["open_date"] = dt.date()
+        res["close_date"] = (dt + interval).date()
         res.pop("t")
         return res
 
