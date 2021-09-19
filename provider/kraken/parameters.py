@@ -14,7 +14,7 @@ class KrakenParameters(ProviderParameters):
     def get_since(self):
         """Provides the since parameter"""
 
-    def get_to(self):
+    def get_add_to_start(self):
         """Provides the end of the candle"""
 
 
@@ -31,8 +31,8 @@ class KrakenParametersDayCandle(KrakenParameters):
     def get_since(self) -> int:
         return self._since
 
-    def get_to(self):
-        return self._since
+    def get_add_to_start(self):
+        return 0
 
 
 class KrakenParametersWeekCandle(KrakenParameters):
@@ -40,7 +40,7 @@ class KrakenParametersWeekCandle(KrakenParameters):
 
     def __init__(self, today: DateTime):
         super().__init__(today)
-        self._since = self._today.get_days_ago_ts(10)
+        self._since = self._today.get_days_ago_ts(21)
 
     def get_interval(self):
         return 10080
@@ -48,5 +48,5 @@ class KrakenParametersWeekCandle(KrakenParameters):
     def get_since(self):
         return self._since
 
-    def get_to(self):
-        return self._since + 7 * 24 * 60 * 60
+    def get_add_to_start(self):
+        return 6 * 24 * 60 * 60

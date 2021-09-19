@@ -24,10 +24,12 @@ class Kraken(provider.Provider):
         self._requester = requester
 
     @staticmethod
-    def fix_data(d: Dict[str, Any], to: int) -> Dict[str, Any]:
+    def fix_data(d: Dict[str, Any], add_to_start: int) -> Dict[str, Any]:
         res = d.copy()
         res["open_date"] = datetime.datetime.fromtimestamp(d["time"]).date()
-        res["close_date"] = datetime.datetime.fromtimestamp(to).date()
+        res["close_date"] = datetime.datetime.fromtimestamp(
+            d["time"] + add_to_start
+        ).date()
         res["provider"] = Kraken.provider_name
         res["open"] = float(res["open"])
         res["close"] = float(res["close"])
@@ -64,7 +66,9 @@ class Kraken(provider.Provider):
                 ]
                 values = [symbol, *values, self.provider_name]
                 d = dict(zip(keys, values))
-                return KrakenData(**self.fix_data(d, self._parameters.get_to()))
+                return KrakenData(
+                    **self.fix_data(d, self._parameters.get_add_to_start())
+                )
         raise provider.SymbolNotFoundError
 
     def get_quotes(self, ptf: portfolio.Portfolio) -> Sequence[KrakenData]:
